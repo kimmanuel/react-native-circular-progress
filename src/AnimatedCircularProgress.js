@@ -13,6 +13,7 @@ const AnimatedProgress = Animated.createAnimatedComponent(CircularProgress);
 export default class AnimatedCircularProgress extends React.PureComponent {
   constructor(props) {
     super(props);
+    this.timingFunction = null;
     this.state = {
       fillAnimation: new Animated.Value(props.prefill)
     }
@@ -25,6 +26,10 @@ export default class AnimatedCircularProgress extends React.PureComponent {
   componentDidUpdate(prevProps) {
     if (prevProps.fill !== this.props.fill) {
       this.animate();
+    }
+
+    if (prevProps.prefill !== this.props.prefill) {
+      this.state.fillAnimation.setValue(this.props.prefill);
     }
   }
 
@@ -39,14 +44,23 @@ export default class AnimatedCircularProgress extends React.PureComponent {
     const duration = dur || this.props.duration;
     const easing = ease || this.props.easing;
 
-    const anim = Animated.timing(this.state.fillAnimation, {
+    this.timingFunction = Animated.timing(this.state.fillAnimation, {
       toValue,
       easing,
       duration,
     });
-    anim.start(this.props.onAnimationComplete);
+    
+    this.timingFunction.start(this.props.onAnimationComplete);
+    
+    return this.timingFunction;
+  }
 
-    return anim;
+  setAnimatedValue(value) {
+    this.state.fillAnimation.setValue(value);
+  }
+  
+  stopAnimation() {
+    if (this.timingFunction) this.timingFunction.stop();
   }
 
   render() {
